@@ -41,10 +41,13 @@ def _get_default(name: str, prop: dict):
     elif prop_type == "number":
         default = 0
         minimum = prop.get("minimum")
+        maximum = prop.get("maximum")
         exclusive_minimum = prop.get("exclusiveMinimum")
         multiple_of = prop.get("multipleOf")
         if minimum is not None:
             default = minimum
+        if maximum is not None and minimum is None:
+            default = maximum
         if exclusive_minimum is not None:
             default = exclusive_minimum + 1
         if multiple_of is not None:
