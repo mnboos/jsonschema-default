@@ -8,7 +8,6 @@ readme = "README.md"
 homepage = ""
 repository = "https://github.com/mnboos/jsonschema-instance"
 license = "GNU AGPL v3"
-authors = ["Martin Boos <mboos@outlook.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
