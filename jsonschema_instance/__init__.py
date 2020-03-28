@@ -1,3 +1,5 @@
+import exrex
+from xeger import Xeger
 import json
 from typing import Union
 from pathlib import Path
@@ -39,7 +41,14 @@ def _get_default(name: str, prop: dict):
 
     if prop_type == "string":
         min_length = prop.get("minLength", 0)
-        return " " * min_length
+        max_length = prop.get("maxLength")
+        pattern = prop.get("pattern")
+        default = " " * min_length
+        if pattern:
+            limit = max_length if max_length else 10
+            x = Xeger(limit=limit)
+            default = x.xeger(pattern)
+        return default
     elif prop_type == "number":
         default = 0
         minimum = prop.get("minimum")

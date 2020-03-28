@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "string": {
+      "type": "string",
+      "pattern": "\\w+"
+    }
+  }
+}
