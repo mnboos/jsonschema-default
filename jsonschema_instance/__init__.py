@@ -1,18 +1,7 @@
-import exrex
 from xeger import Xeger
 import json
-from typing import Union
+from typing import Union, Dict, Callable
 from pathlib import Path
-
-
-__valid_types = {
-    "string",
-    "number",
-    "object",
-    "array",
-    "boolean",
-    "null",
-}
 
 
 def create_from(schema: Union[str, Path]):
@@ -36,46 +25,73 @@ def create_from(schema: Union[str, Path]):
 
 def _get_default(name: str, prop: dict):
     prop_type = prop.get("type", None)
-    if prop_type not in __valid_types:
+    if prop_type not in __generators:
         raise RuntimeError(f"Property '{name}' has an invalid type: {prop_type}")
 
-    if prop_type == "string":
-        min_length = prop.get("minLength", 0)
-        max_length = prop.get("maxLength")
-        pattern = prop.get("pattern")
-        default = " " * min_length
-        if pattern:
-            limit = max_length if max_length else 10
-            x = Xeger(limit=limit)
-            default = x.xeger(pattern)
-        return default
-    elif prop_type == "number":
-        default = 0
-        minimum = prop.get("minimum")
-        maximum = prop.get("maximum")
-        exclusive_minimum = prop.get("exclusiveMinimum")
-        multiple_of = prop.get("multipleOf")
-        if minimum is not None:
-            default = minimum
-        if maximum is not None and minimum is None:
-            default = maximum
-        if exclusive_minimum is not None:
-            default = exclusive_minimum + 1
-        if multiple_of is not None:
-            default = default + (multiple_of - (default % multiple_of))
-        return default
-    elif prop_type == "array":
-        nr_items = prop.get("minItems", 1)
-        items = [_get_default(name=name, prop=prop["items"]) for _ in range(nr_items)]
-        return items
+    default = prop.get("default")
+    if default is None:
+        generator: Callable[[str, dict], any] = __generators[prop_type]
+        default = generator(name, prop)
 
-    elif prop_type == "boolean":
-        return False
-    elif prop_type == "null":
-        return None
-    elif prop_type == "object":
-        val = {}
-        props = prop["properties"]
-        for p in props:
-            val[p] = _get_default(name=p, prop=props[p])
-        return val
+    return default
+
+
+def _create_string(name: str, prop: dict):
+    min_length = prop.get("minLength", 0)
+    max_length = prop.get("maxLength")
+    pattern = prop.get("pattern")
+    default = " " * min_length
+    if pattern:
+        limit = max_length if max_length else 10
+        x = Xeger(limit=limit)
+        default = x.xeger(pattern)
+    return default
+
+
+def _create_number(name: str, prop: dict):
+    default = 0
+    minimum = prop.get("minimum")
+    maximum = prop.get("maximum")
+    exclusive_minimum = prop.get("exclusiveMinimum")
+    multiple_of = prop.get("multipleOf")
+    if minimum is not None:
+        default = minimum
+    if maximum is not None and minimum is None:
+        default = maximum
+    if exclusive_minimum is not None:
+        default = exclusive_minimum + 1
+    if multiple_of is not None:
+        default = default + (multiple_of - (default % multiple_of))
+    return default
+
+
+def _create_array(name: str, prop: dict):
+    nr_items = prop.get("minItems", 1)
+    default = [_get_default(name=name, prop=prop["items"]) for _ in range(nr_items)]
+    return default
+
+
+def _create_null(name: str, prop: dict):
+    return None
+
+
+def _create_boolean(name: str, prop: dict):
+    return False
+
+
+def _create_object(name: str, prop: dict):
+    default = {}
+    props = prop["properties"]
+    for p in props:
+        default[p] = _get_default(name=p, prop=props[p])
+    return default
+
+
+__generators: Dict[str, Callable[[str, dict], any]] = {
+    "string": _create_string,
+    "number": _create_number,
+    "array": _create_array,
+    "boolean": _create_boolean,
+    "object": _create_object,
+    "null": _create_null,
+}
