@@ -1,0 +1,10 @@
+{
+  "properties": {
+    "array": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

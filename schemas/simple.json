@@ -1,0 +1,16 @@
+{
+  "properties": {
+    "string": {
+      "type": "string"
+    },
+    "number": {
+      "type": "number"
+    },
+    "boolean": {
+      "type": "boolean"
+    },
+    "null": {
+      "type": "null"
+    }
+  }
+}
