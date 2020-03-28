@@ -42,10 +42,13 @@ def _get_default(name: str, prop: dict):
         default = 0
         minimum = prop.get("minimum")
         exclusive_minimum = prop.get("exclusiveMinimum")
+        multiple_of = prop.get("multipleOf")
         if minimum is not None:
             default = minimum
         if exclusive_minimum is not None:
             default = exclusive_minimum + 1
+        if multiple_of is not None:
+            default = default + (multiple_of - (default % multiple_of))
         return default
     elif prop_type == "array":
         nr_items = prop.get("minItems", 1)
