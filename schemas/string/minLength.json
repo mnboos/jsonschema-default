@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "string": {
+      "type": "string",
+      "minLength": 2
+    }
+  }
+}

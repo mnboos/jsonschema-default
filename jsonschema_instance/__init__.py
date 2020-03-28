@@ -2,6 +2,7 @@ import json
 from typing import Union
 from pathlib import Path
 
+
 __valid_types = {
     "string",
     "number",
@@ -37,7 +38,8 @@ def _get_default(name: str, prop: dict):
         raise RuntimeError(f"Property '{name}' has an invalid type: {prop_type}")
 
     if prop_type == "string":
-        return ""
+        min_length = prop.get("minLength", 0)
+        return " " * min_length
     elif prop_type == "number":
         default = 0
         minimum = prop.get("minimum")
