@@ -36,7 +36,11 @@ def _get_default(name: str, prop: dict, schema: dict):
             default = _create_ref(name=ref, schema=schema)
         else:
             generator = __generators[prop_type]
-            default = generator(name, prop, schema)
+            enum = prop.get("enum")
+            if enum:
+                default = enum[0]
+            else:
+                default = generator(name, prop, schema)
 
     return default
 
@@ -72,10 +76,7 @@ def _create_number(name: str, prop: dict, schema: dict):
 
 def _create_array(name: str, prop: dict, schema: dict):
     nr_items = prop.get("minItems", 1)
-    default = [
-        _get_default(name=name, prop=prop["items"], schema=schema)
-        for _ in range(nr_items)
-    ]
+    default = [_get_default(name=name, prop=prop["items"], schema=schema) for _ in range(nr_items)]
     return default
 
 
