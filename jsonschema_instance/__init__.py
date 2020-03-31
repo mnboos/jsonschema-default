@@ -75,7 +75,7 @@ def _create_number(name: str, prop: dict, schema: dict):
 
 
 def _create_array(name: str, prop: dict, schema: dict):
-    nr_items = prop.get("minItems", 1)
+    nr_items = prop.get("minItems", 0)
     default = [_get_default(name=name, prop=prop["items"], schema=schema) for _ in range(nr_items)]
     return default
 
