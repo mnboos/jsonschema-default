@@ -4,7 +4,7 @@ from typing import Union, Dict, Callable
 from pathlib import Path
 
 
-def create_from(schema: Union[str, Path]):
+def create_from(schema: Union[dict, str, Path]):
     schema: dict
     if isinstance(schema, Path):
         schema = json.loads(schema.read_text())
