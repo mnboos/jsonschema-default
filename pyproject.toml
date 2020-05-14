@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "jsonschema-default"
-version = "0.1.0"
+version = "1.0.0"
 description = "Create default objects from a JSON schema"
 authors = ["Martin Boos <mboos@outlook.com>"]
 maintainers = ["Martin Boos <mboos@outlook.com>"]
