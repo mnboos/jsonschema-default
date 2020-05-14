@@ -12,7 +12,6 @@ license = "GNU AGPL v3"
 [tool.poetry.dependencies]
 python = "^3.7"
 xeger = "^0.3.5"
-django = {extras = ["argon2"], version = "^3.0.5"}
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.4.1"
