@@ -1,5 +1,5 @@
 import json
-import jsonschema_instance as js
+import jsonschema_default as js
 from pathlib import Path
 import re
 

@@ -1,4 +1,4 @@
-import jsonschema_instance as js
+import jsonschema_default as js
 
 
 def test_min_length():
