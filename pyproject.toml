@@ -1,17 +1,18 @@
 [tool.poetry]
-name = "jsonschema-instance"
+name = "jsonschema-default"
 version = "0.1.0"
-description = "A Python package that creates default objects from a JSON schema."
+description = "Create default objects from a JSON schema"
 authors = ["Martin Boos <mboos@outlook.com>"]
 maintainers = ["Martin Boos <mboos@outlook.com>"]
 readme = "README.md"
 homepage = ""
-repository = "https://github.com/mnboos/jsonschema-instance"
+repository = "https://github.com/mnboos/jsonschema-default"
 license = "GNU AGPL v3"
 
 [tool.poetry.dependencies]
 python = "^3.7"
 xeger = "^0.3.5"
+django = {extras = ["argon2"], version = "^3.0.5"}
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.4.1"
