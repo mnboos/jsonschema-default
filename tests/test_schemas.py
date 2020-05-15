@@ -14,3 +14,8 @@ def test_simple():
 def test_object():
     obj = js.create_from("./schemas/object.json")
     assert obj == {"object": {"string": ""}}
+
+
+def test_property_type_list():
+    obj = js.create_from("./schemas/prop_type_list.json")
+    assert obj == {"stringorint": ""}

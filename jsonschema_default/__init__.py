@@ -28,6 +28,8 @@ def _get_default(name: str, prop: dict, schema: dict):
     ref = prop.get("$ref")
     prop_type = prop.get("type", None)
     if not ref:
+        if isinstance(prop_type, list):
+            prop_type = prop_type[0]
         if prop_type not in __generators:
             raise RuntimeError(f"Property '{name}' has an invalid type: {prop_type}")
 
