@@ -9,11 +9,12 @@ def create_from(schema: Union[dict, str, Path]):
     if isinstance(schema, Path):
         schema = json.loads(schema.read_text())
     elif isinstance(schema, str):
-        path = Path(schema)
-        if path.is_file():
-            schema = json.loads(path.read_text())
-        else:
+        try:
             schema = json.loads(schema)
+        except json.decoder.JSONDecodeError:
+            path = Path(schema)
+            if path.is_file():
+                schema = json.loads(path.read_text())
 
     obj = {}
     properties = schema.get("properties", {})
