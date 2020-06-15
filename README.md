@@ -16,3 +16,21 @@ import jsonschema_default
 
 default_obj = jsonschema_default.create_from("<schema>")
 ```
+
+## Development
+- Install and configure [Poetry](https://python-poetry.org/)
+
+```bash
+pip install --user poetry
+```
+
+See [Installation](https://python-poetry.org/docs/#installation) for the official guide.
+
+- Install the dependencies using 
+
+```bash
+# Configure poetry to create a local venv directory
+poetry config virtualenvs.in-project true
+
+poetry install
+```
