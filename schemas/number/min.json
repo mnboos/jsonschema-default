@@ -4,6 +4,10 @@
     "number": {
       "type": "number",
       "minimum": 10
+    },
+    "integer": {
+      "type": "integer",
+      "minimum": 1337
     }
   }
 }
