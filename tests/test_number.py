@@ -3,7 +3,7 @@ import jsonschema_default as js
 
 def test_minimum():
     obj = js.create_from("./schemas/number/min.json")
-    assert obj == {"number": 10}
+    assert obj == {"number": 10, "integer": 1337}
 
 
 def test_multipleof():

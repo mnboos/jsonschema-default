@@ -113,6 +113,7 @@ def _create_ref(name: str, schema: {}) -> any:
 
 __generators: Dict[str, Callable[[str, dict, dict], any]] = {
     "string": _create_string,
+    "integer": _create_number,
     "number": _create_number,
     "array": _create_array,
     "boolean": _create_boolean,
