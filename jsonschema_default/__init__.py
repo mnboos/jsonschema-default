@@ -17,6 +17,9 @@ def create_from(schema: Union[dict, str, Path]):
                 schema = json.loads(path.read_text())
 
     obj = {}
+    if schema.get("properties", None) is None and schema.get("$ref", None) is not None:
+        return _get_default(name="", prop=schema, schema=schema)
+
     properties = schema.get("properties", {})
     for p in properties:
         prop: dict = properties[p]
