@@ -28,15 +28,19 @@ def create_from(schema: Union[dict, str, Path]):
 
 
 def _get_default(name: str, prop: dict, schema: dict):
+    default = prop.get("default")
     ref = prop.get("$ref")
     prop_type = prop.get("type", None)
+    one_of = prop.get("oneOf", None)
     if not ref:
         if isinstance(prop_type, list):
             prop_type = prop_type[0]
-        if prop_type not in __generators:
+        elif one_of:
+            assert isinstance(one_of, list), f"oneOf '{one_of}' is supposed to be a list"
+            default = _get_default(name, one_of[0], schema)
+        if not one_of and prop_type not in __generators:
             raise RuntimeError(f"Property '{name}' has an invalid type: {prop_type}")
 
-    default = prop.get("default")
     if default is None:
         if ref:
             default = _create_ref(name=ref, schema=schema)
