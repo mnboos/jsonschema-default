@@ -4,8 +4,12 @@ from typing import Union, Dict, Callable
 from pathlib import Path
 
 
-def create_from(schema: Union[dict, str, Path]):
-    schema: dict
+def create_from(schema: Union[dict, str, Path]) -> dict:
+    """
+    Creates a default object for the specified schema
+    :param schema:
+    :return:
+    """
     if isinstance(schema, Path):
         schema = json.loads(schema.read_text())
     elif isinstance(schema, str):
@@ -56,6 +60,13 @@ def _get_default(name: str, prop: dict, schema: dict):
 
 
 def _create_string(name: str, prop: dict, schema: dict):
+    """
+    Creates a default string
+    :param name:
+    :param prop:
+    :param schema:
+    :return:
+    """
     min_length = prop.get("minLength", 0)
     max_length = prop.get("maxLength")
     pattern = prop.get("pattern")
@@ -68,6 +79,17 @@ def _create_string(name: str, prop: dict, schema: dict):
 
 
 def _create_number(name: str, prop: dict, schema: dict):
+    """
+    Creates a default number, respecting the following constraints (if specified in the schema)
+      - minimum
+      - maximum
+      - exclusiveMinimum
+      - multipleOf
+    :param name:
+    :param prop:
+    :param schema:
+    :return:
+    """
     default = 0
     minimum = prop.get("minimum")
     maximum = prop.get("maximum")
