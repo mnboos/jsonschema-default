@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+       "alice": { "$ref": "#/definitions/bob" },
+        "bob": { "$ref": "#/definitions/alice" }
+  },
+  "type": "object",
+  "properties": {
+    "alice": { "$ref": "#/definitions/alice" }
+  }
+}

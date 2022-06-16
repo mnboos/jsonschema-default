@@ -1,6 +1,6 @@
 from xeger import Xeger
 import json
-from typing import Union, Dict, Callable
+from typing import Union, Dict, Callable, Any
 from pathlib import Path
 
 
@@ -29,11 +29,22 @@ def create_from(schema: Union[dict, str, Path]) -> dict:
     return obj
 
 
-def _get_default(name: str, prop: dict, schema: dict):
+def _get_default(name: str, prop: dict, schema: dict, from_ref: bool = False) -> Any:
+    """
+    Main function creating the default value for a property
+    :param name: The name of the property to initialize
+    :param prop: The details of the property
+    :param schema: The whole schema
+    :return:
+    """
+
     default = prop.get("default")
     ref = prop.get("$ref")
     prop_type = prop.get("type", None)
     one_of = prop.get("oneOf", None)
+    if ref and from_ref:
+        raise RuntimeError("Cyclic refs are not allowed")
+
     if not ref:
         if isinstance(prop_type, list):
             prop_type = prop_type[0]
@@ -135,7 +146,7 @@ def _create_ref(name: str, schema: {}) -> any:
     elem = schema
     for path_parth in path.lstrip("/").split("/"):
         elem = elem[path_parth]
-    return _get_default("", elem, schema=schema)
+    return _get_default("", elem, schema=schema, from_ref=True)
 
 
 __generators: Dict[str, Callable[[str, dict, dict], any]] = {
