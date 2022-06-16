@@ -20,14 +20,12 @@ def create_from(schema: Union[dict, str, Path]) -> dict:
             if path.is_file():
                 schema = json.loads(path.read_text())
 
-    obj = {}
+    schema: dict
     if schema.get("properties", None) is None and schema.get("$ref", None) is not None:
         return _get_default(name="", prop=schema, schema=schema)
 
     properties = schema.get("properties", {})
-    for p in properties:
-        prop: dict = properties[p]
-        obj[p] = _get_default(name=p, prop=prop, schema=schema)
+    obj = {p: _get_default(name=p, prop=prop, schema=schema) for p, prop in properties.items()}
     return obj
 
 
