@@ -67,12 +67,12 @@ def _create_string(name: str, prop: dict, schema: dict):
     """
     min_length = prop.get("minLength", 0)
     max_length = prop.get("maxLength")
-    pattern = prop.get("pattern")
+    regex_pattern = prop.get("pattern")
     default = " " * min_length
-    if pattern:
+    if regex_pattern:
         limit = max_length if max_length else 10
         x = Xeger(limit=limit)
-        default = x.xeger(pattern)
+        default = x.xeger(regex_pattern)
     return default
 
 
