@@ -1,0 +1,14 @@
+{
+  "properties": {
+    "array": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+            {"type": "string", "default": "foobar"},
+            {"type": "integer"}
+        ]
+      }
+    }
+  }
+}

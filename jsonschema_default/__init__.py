@@ -1,11 +1,15 @@
 from xeger import Xeger
 import json
-from typing import Union, Dict, Callable
+from typing import Union, Dict, Callable, Any
 from pathlib import Path
 
 
-def create_from(schema: Union[dict, str, Path]):
-    schema: dict
+def create_from(schema: Union[dict, str, Path]) -> dict:
+    """
+    Creates a default object for the specified schema
+    :param schema:
+    :return:
+    """
     if isinstance(schema, Path):
         schema = json.loads(schema.read_text())
     elif isinstance(schema, str):
@@ -16,27 +20,40 @@ def create_from(schema: Union[dict, str, Path]):
             if path.is_file():
                 schema = json.loads(path.read_text())
 
-    obj = {}
+    schema: dict
     if schema.get("properties", None) is None and schema.get("$ref", None) is not None:
         return _get_default(name="", prop=schema, schema=schema)
 
     properties = schema.get("properties", {})
-    for p in properties:
-        prop: dict = properties[p]
-        obj[p] = _get_default(name=p, prop=prop, schema=schema)
+    obj = {p: _get_default(name=p, prop=prop, schema=schema) for p, prop in properties.items()}
     return obj
 
 
-def _get_default(name: str, prop: dict, schema: dict):
+def _get_default(name: str, prop: dict, schema: dict, from_ref: bool = False) -> Any:
+    """
+    Main function creating the default value for a property
+    :param name: The name of the property to initialize
+    :param prop: The details of the property
+    :param schema: The whole schema
+    :return:
+    """
+
+    default = prop.get("default")
     ref = prop.get("$ref")
     prop_type = prop.get("type", None)
+    one_of = prop.get("oneOf", None)
+    if ref and from_ref:
+        raise RuntimeError("Cyclic refs are not allowed")
+
     if not ref:
         if isinstance(prop_type, list):
             prop_type = prop_type[0]
-        if prop_type not in __generators:
+        elif one_of:
+            assert isinstance(one_of, list), f"oneOf '{one_of}' is supposed to be a list"
+            default = _get_default(name, one_of[0], schema)
+        if not one_of and prop_type not in __generators:
             raise RuntimeError(f"Property '{name}' has an invalid type: {prop_type}")
 
-    default = prop.get("default")
     if default is None:
         if ref:
             default = _create_ref(name=ref, schema=schema)
@@ -52,18 +69,36 @@ def _get_default(name: str, prop: dict, schema: dict):
 
 
 def _create_string(name: str, prop: dict, schema: dict):
+    """
+    Creates a default string
+    :param name:
+    :param prop:
+    :param schema:
+    :return:
+    """
     min_length = prop.get("minLength", 0)
     max_length = prop.get("maxLength")
-    pattern = prop.get("pattern")
+    regex_pattern = prop.get("pattern")
     default = " " * min_length
-    if pattern:
+    if regex_pattern:
         limit = max_length if max_length else 10
         x = Xeger(limit=limit)
-        default = x.xeger(pattern)
+        default = x.xeger(regex_pattern)
     return default
 
 
 def _create_number(name: str, prop: dict, schema: dict):
+    """
+    Creates a default number, respecting the following constraints (if specified in the schema)
+      - minimum
+      - maximum
+      - exclusiveMinimum
+      - multipleOf
+    :param name:
+    :param prop:
+    :param schema:
+    :return:
+    """
     default = 0
     minimum = prop.get("minimum")
     maximum = prop.get("maximum")
@@ -111,7 +146,7 @@ def _create_ref(name: str, schema: {}) -> any:
     elem = schema
     for path_parth in path.lstrip("/").split("/"):
         elem = elem[path_parth]
-    return _get_default("", elem, schema=schema)
+    return _get_default("", elem, schema=schema, from_ref=True)
 
 
 __generators: Dict[str, Callable[[str, dict, dict], any]] = {
