@@ -38,7 +38,7 @@ def _get_default(name: str, prop: dict, schema: dict, from_ref: bool = False) ->
     :return:
     """
 
-    default = prop.get("default")
+    default = prop.get("default") or prop.get("const")
     ref = prop.get("$ref")
     prop_type = prop.get("type", None)
     one_of = prop.get("oneOf", None)

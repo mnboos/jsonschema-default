@@ -1,3 +1,5 @@
+# 1.4.0
+- 'const' support added
 # 1.3.1
 - Fix: Properly catch cycles in refs
 # 1.3.0

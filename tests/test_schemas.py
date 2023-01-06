@@ -11,6 +11,11 @@ def test_simple():
     assert obj == {"string": "", "number": 0, "boolean": False, "null": None}
 
 
+def test_const():
+    obj = js.create_from("./schemas/const.json")
+    assert obj == {"string": "hello world"}
+
+
 def test_object():
     obj = js.create_from("./schemas/object.json")
     assert obj == {"object": {"string": ""}}
