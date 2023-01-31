@@ -1,3 +1,5 @@
+# 1.4.1
+- fix regression and assure code works as intended (see #9)
 # 1.4.0
 - 'const' support added
 # 1.3.1
