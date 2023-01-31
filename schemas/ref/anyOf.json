@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+       "alice": {
+         "properties": {
+            "name": {"type": "string", "default": "alice"}
+          }
+       }
+  },
+  "type": "object",
+  "properties": {
+    "person": {
+      "anyOf": [{ "$ref": "#/definitions/alice"}]}
+  }
+}

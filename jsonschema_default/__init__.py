@@ -46,6 +46,7 @@ def _get_default(name: str, prop: dict, schema: dict, from_ref: bool = False) ->
     ref = prop.get("$ref")
     prop_type = prop.get("type", None)
     one_of = prop.get("oneOf", None)
+    any_of = prop.get("anyOf", None)
     if ref and from_ref:
         raise RuntimeError("Cyclic refs are not allowed")
 
@@ -55,7 +56,10 @@ def _get_default(name: str, prop: dict, schema: dict, from_ref: bool = False) ->
         elif one_of:
             assert isinstance(one_of, list), f"oneOf '{one_of}' is supposed to be a list"
             default = _get_default(name, one_of[0], schema)
-        if not one_of and prop_type not in __generators:
+        elif any_of:
+            assert isinstance(any_of, list), f"anyOf '{any_of}' is supposed to be a list"
+            default = _get_default(name, any_of[0], schema)
+        if not one_of and not any_of and prop_type not in __generators:
             raise RuntimeError(f"Property '{name}' has an invalid type: {prop_type}")
 
     if default is None:
@@ -135,9 +139,10 @@ def _create_boolean(name: str, prop: dict, schema: dict):
 
 def _create_object(name: str, prop: dict, schema: dict):
     default = {}
-    props = prop["properties"]
-    for p in props:
-        default[p] = _get_default(name=p, prop=props[p], schema=schema)
+    props = prop.get("properties")
+    if props:
+        for p in props:
+            default[p] = _get_default(name=p, prop=props[p], schema=schema)
     return default
 
 
@@ -150,7 +155,8 @@ def _create_ref(name: str, schema: {}) -> any:
     elem = schema
     for path_parth in path.lstrip("/").split("/"):
         elem = elem[path_parth]
-    return _get_default("", elem, schema=schema, from_ref=True)
+    ref_schema = {**elem, "definitions": schema.get("definitions")}
+    return create_from(ref_schema)
 
 
 __generators: Dict[str, Callable[[str, dict, dict], any]] = {

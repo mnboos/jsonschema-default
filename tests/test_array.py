@@ -14,3 +14,8 @@ def test_string_array_with_length():
 def test_array_one_of():
     obj = js.create_from("./schemas/array/oneOf.json")
     assert obj == {"array": ["foobar"]}
+
+
+def test_array_any_of():
+    obj = js.create_from("./schemas/array/anyOf.json")
+    assert obj == {"array": ["anyof string"]}
