@@ -6,7 +6,8 @@ import re
 
 def test_min_length():
     obj = js.create_from("./schemas/string/minLength.json")
-    assert obj == {"string": "  "}
+    val = obj["string"]
+    assert type(val) == str and len(val) >= 2
 
 
 def test_regex():

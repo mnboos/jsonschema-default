@@ -1,32 +1,10 @@
-from xeger import Xeger
+from . import main
 import json
 from typing import Union, Dict, Callable, Any
 from pathlib import Path
 
-
 def create_from(schema: Union[dict, str, Path]) -> dict:
-    """
-    Creates a default object for the specified schema
-    :param schema:
-    :return:
-    """
-    if isinstance(schema, Path):
-        schema = json.loads(schema.read_text())
-    elif isinstance(schema, str):
-        try:
-            schema = json.loads(schema)
-        except json.decoder.JSONDecodeError:
-            path = Path(schema)
-            if path.is_file():
-                schema = json.loads(path.read_text())
-
-    schema: dict
-    if schema.get("properties", None) is None and schema.get("$ref", None) is not None:
-        return _get_default(name="", prop=schema, schema=schema)
-
-    properties = schema.get("properties", {})
-    obj = {p: _get_default(name=p, prop=prop, schema=schema) for p, prop in properties.items()}
-    return obj
+    return main.JsonSchemaDefault(schema).generate()
 
 
 def _get_default(name: str, prop: dict, schema: dict, from_ref: bool = False) -> Any:

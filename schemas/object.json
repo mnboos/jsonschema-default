@@ -1,12 +1,8 @@
 {
-  "properties": {
-    "object": {
       "type": "object",
       "properties": {
         "string": {
           "type": "string"
         }
       }
-    }
-  }
 }

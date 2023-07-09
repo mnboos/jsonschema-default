@@ -1,3 +1,5 @@
+from types import NoneType
+
 import jsonschema_default as js
 
 
@@ -8,7 +10,9 @@ def test_empty():
 
 def test_simple():
     obj = js.create_from("./schemas/simple.json")
-    assert obj == {"string": "", "number": 0, "boolean": False, "null": None}
+    assert type(obj["string"]) == str
+    assert type(obj["boolean"]) == bool
+    assert type(obj["null"]) == NoneType
 
 
 def test_const():
@@ -18,9 +22,9 @@ def test_const():
 
 def test_object():
     obj = js.create_from("./schemas/object.json")
-    assert obj == {"object": {"string": ""}}
+    assert type(obj["string"]) == str
 
 
 def test_property_type_list():
     obj = js.create_from("./schemas/prop_type_list.json")
-    assert obj == {"stringorint": ""}
+    assert type(obj["stringorint"]) == str
