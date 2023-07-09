@@ -28,6 +28,3 @@ jobs:
         cache: 'poetry'
     - run: poetry install
     - run: poetry run pytest
-    - name: Test with pytest
-      run: |
-        pytest
