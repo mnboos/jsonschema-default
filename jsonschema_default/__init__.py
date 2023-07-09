@@ -147,7 +147,7 @@ def _create_object(name: str, prop: dict, schema: dict):
 
 
 def _create_ref(name: str, schema: {}) -> any:
-    is_web = name.lower().startswith("http://") or name.lower().startswith("https://")
+    # is_web = name.lower().startswith(("http://", "https://"))
     path: str
     file, path = name.split("#")
     if file:
