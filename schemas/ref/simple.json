@@ -5,10 +5,10 @@
       "type": "object",
       "properties": {
         "street": { "type": "string",
-          "default": "samplestreet"
+          "default": "mystreet"
         },
-        "city":           { "type": "string" },
-        "state":          { "type": "string" }
+        "city":           { "type": "string", "default": "mycity" },
+        "state":          { "type": "string", "default": "mystate" }
       }
     }
   },

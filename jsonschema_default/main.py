@@ -2,7 +2,7 @@ import json
 import random
 import string
 from pathlib import Path
-from typing import Union, Any
+from typing import Union, Any, Optional
 from loguru import logger
 
 import rstr
@@ -10,12 +10,15 @@ import rstr
 
 class JsonSchemaDefault:
 
-    def __init__(self, schema: Union[dict, str, Path]):
+    def __init__(self, schema: Union[dict, str, Path], parent: Optional['JsonSchemaDefault'], from_refs: Optional[list[str]] = None):
         """
         Creates a default object for the specified schema
         :param schema:
         :return:
         """
+
+        self.parent = parent
+        self.ref_path: list[str] = from_refs if from_refs else []
 
         if isinstance(schema, Path):
             schema = json.loads(schema.read_text())
@@ -26,7 +29,10 @@ class JsonSchemaDefault:
                 path = Path(schema)
                 if path.is_file():
                     schema = json.loads(path.read_text())
+                else:
+                    raise RuntimeError(f"Schema could not be loaded from file: {path}")
 
+        assert type(schema) == dict
         self.schema: dict = schema
 
     def _string(self):
@@ -60,43 +66,54 @@ class JsonSchemaDefault:
     def _array(self):
         nr_items = self.schema.get("minItems", 0)
         item_schema = self.schema.get("items", {})
-        gen = JsonSchemaDefault(item_schema)
+        gen = JsonSchemaDefault(item_schema, parent=self)
         return [gen.generate() for _ in range(nr_items)]
 
     def _object(self):
         default = {}
         props: dict[str, dict] = self.schema.get("properties", {})
         for name, schema in props.items():
-            default[name] = JsonSchemaDefault(schema).generate()
+            default[name] = JsonSchemaDefault(schema, parent=self).generate()
         return default
 
-    def from_ref(self, ref: str) -> any:
+    def _root(self):
+        return self.parent._root() if self.parent else self
+
+    def ref(self, ref: str) -> any:
+        if ref in self.ref_path:
+            raise RuntimeError("Ref cycle detected")
+
+        root_schema = self._root().schema
+
         # is_web = name.lower().startswith(("http://", "https://"))
         path: str
         file, path = ref.split("#")
         if file:
             schema = json.loads(Path(file).read_text())
         else:
-            schema = self.schema
+            schema = root_schema
         elem = schema
         for path_parth in path.lstrip("/").split("/"):
+            assert path_parth in elem, f"Expected key '{path_parth}' expected but not found in: {elem}"
             elem = elem[path_parth]
-        ref_schema = {**elem, "definitions": schema.get("definitions")}
-        return JsonSchemaDefault(ref_schema).generate()
+        ref_schema = {**elem, "definitions": root_schema.get("definitions")}
+        return JsonSchemaDefault(ref_schema, parent=self, from_refs=[ref, *self.ref_path]).generate()
 
     def generate(self):
         ref = self.schema.get("$ref")
-        one_of = self.schema.get("oneOf", None)
-        any_of = self.schema.get("anyOf", None)
+        one_of = self.schema.get("oneOf")
+        any_of = self.schema.get("anyOf")
+        enum = self.schema.get("enum")
 
         assert one_of is None or len(one_of)
         assert any_of is None or len(any_of)
+        assert enum is None or type(enum) == list
 
         if ref:
-            return self.from_ref(ref)
+            return self.ref(ref)
         elif one_of or any_of:
             s = one_of[0] if one_of else any_of[0]
-            return JsonSchemaDefault(s).generate()
+            return JsonSchemaDefault(s, parent=self).generate()
 
         result: Any
         if "default" in self.schema:
@@ -104,29 +121,35 @@ class JsonSchemaDefault:
         elif "const" in self.schema:
             result = self.schema["const"]
         else:
-            t = self.schema.get("type", "object")
+            t = self.type()
 
-            if isinstance(t, list):
-                if not t:
-                    raise RuntimeError("Type must not be an empty list")
-                t = t[0]
-
-            if t == "string":
-                result = self._string()
-            elif t == "number" or t == "integer":
-                result = self._number()
-            elif t == "array":
-                result = self._array()
-            elif t == "boolean":
-                result = bool(random.randint(0, 1))
-            elif t == "null":
-                result = None
-            elif t == "object":
-                result = self._object()
+            if enum:
+                result = enum[0]
             else:
-                logger.warning("Schema error: {}", self.schema)
-                raise RuntimeError(f"Unknown type: {t}")
+                if t == "string":
+                    result = self._string()
+                elif t == "number" or t == "integer":
+                    result = self._number()
+                elif t == "array":
+                    result = self._array()
+                elif t == "boolean":
+                    result = bool(random.randint(0, 1))
+                elif t == "null":
+                    result = None
+                elif t == "object":
+                    result = self._object()
+                else:
+                    logger.warning("Schema error: {}", self.schema)
+                    raise RuntimeError(f"Unknown type: {t}")
         return result
+
+    def type(self):
+        t = self.schema.get("type", "object")
+        if isinstance(t, list):
+            if not t:
+                raise RuntimeError("Type must not be an empty list")
+            t = t[0]
+        return t
 
 
 
