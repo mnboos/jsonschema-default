@@ -4,8 +4,5 @@
        "alice": { "$ref": "#/definitions/bob" },
         "bob": { "$ref": "#/definitions/alice" }
   },
-  "type": "object",
-  "properties": {
-    "alice": { "$ref": "#/definitions/alice" }
-  }
+  "$ref": "#/definitions/alice"
 }
