@@ -1,0 +1,25 @@
+{
+  "title": "Container",
+  "type": "object",
+  "properties": {
+    "thing": {
+      "default": "foo",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Thing"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "Thing": {
+      "title": "Thing",
+      "description": "An enumeration.",
+      "enum": [
+        "foo",
+        "bar"
+      ],
+      "type": "string"
+    }
+  }
+}

@@ -14,3 +14,8 @@ def test_multipleof():
 def test_negative_maximum():
     obj = js.create_from("./schemas/number/negative_max.json")
     assert obj == {"number": -10}
+
+
+def test_default():
+    obj = js.create_from("./schemas/number/default.json")
+    assert obj == 0

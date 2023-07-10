@@ -10,10 +10,12 @@
                     "default": "samplestreet"
                 },
                 "city": {
-                    "type": "string"
+                    "type": "string",
+                    "default": "samplecity"
                 },
                 "state": {
-                    "type": "string"
+                    "type": "string",
+                    "default": "samplestate"
                 }
             }
         }
