@@ -7,7 +7,6 @@
 *.tar
 *.pyo
 out.txt
-.idea
 deprecated/
 data/*
 .vscode/*
