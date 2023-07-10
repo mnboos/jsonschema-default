@@ -1,0 +1,8 @@
+{
+    "$id": "#/definitions/boolean-tokenallowed-default-true",
+    "oneOf": [
+        { "type": "boolean", "default": true },
+        { "type": "string", "default": true },
+        { "type": "null", "default": true }
+    ]
+}
