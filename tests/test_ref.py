@@ -15,3 +15,8 @@ def test_ref_cycle():
 def test_any_of():
     obj = js.create_from("./schemas/ref/anyOf.json")
     assert obj == {"person": {"name": "alice"}}
+
+
+def test_thing():
+    obj = js.create_from("./schemas/ref/thing.json")
+    assert obj == {"thing": "foo"}
