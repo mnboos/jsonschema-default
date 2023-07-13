@@ -20,3 +20,12 @@ def test_any_of():
 def test_thing():
     obj = js.create_from("./schemas/ref/thing.json")
     assert obj == {"thing": "foo"}
+
+
+def test_streetaddress():
+    obj = js.create_from("./schemas/ref/streetaddress.json")
+    assert obj == {
+        "address": {"street": {"block": 123, "name": "Default STREET NAME value"}},
+        "first_name": "Default NAME value",
+        "last_name": "Default LAST NAME value",
+    }

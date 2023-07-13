@@ -1,0 +1,44 @@
+{
+    "$id": "https://example.com/schemas/customer",
+
+    "type": "object",
+    "properties": {
+      "first_name": { "type": "string", "default": "Default NAME value"},
+      "last_name": { "type": "string", "default": "Default LAST NAME value" },
+      "address": { "$ref": "#/$defs/address" }
+    },
+    "required": ["first_name", "last_name", "address"],
+
+    "$defs": {
+      "address": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+            "street"
+        ],
+        "properties": {
+          "street": {
+            "$ref": "#/$defs/street"
+          }
+        }
+      },
+      "street": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "block"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "default": "Default STREET NAME value"
+          },
+          "block": {
+            "type": "number",
+            "default": 123
+          }
+        }
+      }
+    }
+  }
