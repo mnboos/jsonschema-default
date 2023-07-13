@@ -9,8 +9,12 @@ import rstr
 
 
 class JsonSchemaDefault:
-
-    def __init__(self, schema: Union[dict, str, Path], parent: Optional['JsonSchemaDefault'], from_refs: Optional[list[str]] = None):
+    def __init__(
+        self,
+        schema: Union[dict, str, Path],
+        parent: Optional["JsonSchemaDefault"],
+        from_refs: Optional[list[str]] = None,
+    ):
         """
         Creates a default object for the specified schema
         :param schema:
@@ -94,10 +98,14 @@ class JsonSchemaDefault:
             schema = root_schema
         elem = schema
         for path_parth in path.lstrip("/").split("/"):
-            assert path_parth in elem, f"Expected key '{path_parth}' expected but not found in: {elem}"
+            assert (
+                path_parth in elem
+            ), f"Expected key '{path_parth}' expected but not found in: {elem}"
             elem = elem[path_parth]
         ref_schema = {**elem, "definitions": root_schema.get("definitions")}
-        return JsonSchemaDefault(ref_schema, parent=self, from_refs=[ref, *self.ref_path]).generate()
+        return JsonSchemaDefault(
+            ref_schema, parent=self, from_refs=[ref, *self.ref_path]
+        ).generate()
 
     def generate(self):
         ref = self.schema.get("$ref")
@@ -150,10 +158,3 @@ class JsonSchemaDefault:
                 raise RuntimeError("Type must not be an empty list")
             t = t[0]
         return t
-
-
-
-
-
-
-

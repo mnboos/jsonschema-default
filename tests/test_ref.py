@@ -4,7 +4,9 @@ import pytest
 
 def test_simple_ref():
     obj = js.create_from("./schemas/ref/simple.json")
-    assert obj == {"billing_address": {"street": "mystreet", "city": "mycity", "state": "mystate"}}
+    assert obj == {
+        "billing_address": {"street": "mystreet", "city": "mycity", "state": "mystate"}
+    }
 
 
 def test_ref_cycle():
