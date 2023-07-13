@@ -1,3 +1,5 @@
+# 1.6.0
+- Rewrite the engine and fix several issues
 # 1.5.0
 - support for 'anyOf' added
 # 1.4.1
