@@ -8,3 +8,12 @@ def test_ref_schema():
         "city": "samplecity",
         "state": "samplestate",
     }
+
+
+def test_ref_schema_check_missing():
+    obj = js.create_from("./schemas/ref/ref_schema.json", check_missing=True)
+    assert obj == {
+        "street": "samplestreet",
+        "city": "samplecity",
+        "state": "samplestate",
+    }

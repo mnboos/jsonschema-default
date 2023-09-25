@@ -31,3 +31,10 @@ def test_streetaddress():
         "first_name": "Default NAME value",
         "last_name": "Default LAST NAME value",
     }
+
+
+def test_ref_schema_check_missing():
+    with pytest.raises(js.MissingError):
+        js.create_from(
+            "./schemas/ref/streetaddress_no_defaults.json", check_missing=True
+        )
