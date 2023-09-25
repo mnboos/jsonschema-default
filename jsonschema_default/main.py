@@ -8,20 +8,27 @@ from loguru import logger
 import rstr
 
 
+class MissingError(Exception):
+    def __init__(self, message: str):
+        self.message = message
+
+
 class JsonSchemaDefault:
     def __init__(
         self,
         schema: Union[dict, str, Path],
         parent: Optional["JsonSchemaDefault"],
         from_refs: Optional[list[str]] = None,
+        check_missing: bool = False,
     ):
         """
         Creates a default object for the specified schema
         :param schema:
         :return:
         """
-
+        self.check_missing = check_missing
         self.parent = parent
+        self.missing = []
         self.ref_path: list[str] = from_refs if from_refs else []
 
         if isinstance(schema, Path):
@@ -70,14 +77,29 @@ class JsonSchemaDefault:
     def _array(self):
         nr_items = self.schema.get("minItems", 0)
         item_schema = self.schema.get("items", {})
-        gen = JsonSchemaDefault(item_schema, parent=self)
+        gen = JsonSchemaDefault(
+            item_schema, parent=self, check_missing=self.check_missing
+        )
         return [gen.generate() for _ in range(nr_items)]
 
     def _object(self):
         default = {}
         props: dict[str, dict] = self.schema.get("properties", {})
         for name, schema in props.items():
-            default[name] = JsonSchemaDefault(schema, parent=self).generate()
+            child_obj = JsonSchemaDefault(
+                schema, parent=self, check_missing=self.check_missing
+            )
+            result = child_obj.generate()
+
+            if self.check_missing and result is None and child_obj.type() != "null":
+                self.missing.append(name)
+            else:
+                default[name] = result
+
+            if len(child_obj.missing) > 0:
+                for child_error in child_obj.missing:
+                    self.missing.append(f"{name}.{child_error}")
+
         return default
 
     def _root(self):
@@ -104,7 +126,10 @@ class JsonSchemaDefault:
             elem = elem[path_parth]
         ref_schema = {**elem, "definitions": root_schema.get("definitions")}
         return JsonSchemaDefault(
-            ref_schema, parent=self, from_refs=[ref, *self.ref_path]
+            ref_schema,
+            parent=self,
+            from_refs=[ref, *self.ref_path],
+            check_missing=self.check_missing,
         ).generate()
 
     def generate(self):
@@ -121,7 +146,9 @@ class JsonSchemaDefault:
             return self.ref(ref)
         elif one_of or any_of:
             s = one_of[0] if one_of else any_of[0]
-            return JsonSchemaDefault(s, parent=self).generate()
+            return JsonSchemaDefault(
+                s, parent=self, check_missing=self.check_missing
+            ).generate()
 
         result: Any
         if "default" in self.schema:
@@ -131,24 +158,29 @@ class JsonSchemaDefault:
         else:
             t = self.type()
 
-            if enum:
-                result = enum[0]
+            if t == "object":
+                result = self._object()
             else:
-                if t == "string":
-                    result = self._string()
-                elif t == "number" or t == "integer":
-                    result = self._number()
-                elif t == "array":
-                    result = self._array()
-                elif t == "boolean":
-                    result = bool(random.randint(0, 1))
-                elif t == "null":
+                if self.check_missing:
                     result = None
-                elif t == "object":
-                    result = self._object()
+                elif enum:
+                    result = enum[0]
                 else:
-                    logger.warning("Schema error: {}", self.schema)
-                    raise RuntimeError(f"Unknown type: {t}")
+                    if t == "string":
+                        result = self._string()
+                    elif t == "number" or t == "integer":
+                        result = self._number()
+                    elif t == "array":
+                        result = self._array()
+                    elif t == "boolean":
+                        result = bool(random.randint(0, 1))
+                    elif t == "null":
+                        result = None
+                    elif t == "object":
+                        result = self._object()
+                    else:
+                        logger.warning("Schema error: {}", self.schema)
+                        raise RuntimeError(f"Unknown type: {t}")
         return result
 
     def type(self):
