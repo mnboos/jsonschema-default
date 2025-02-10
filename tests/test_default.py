@@ -1,7 +1,4 @@
-import json
 import jsonschema_default as js
-from pathlib import Path
-import re
 
 
 def test_default():
@@ -17,3 +14,8 @@ def test_default_and_const():
 
     obj = js.create_from("./schemas/default/default_and_const.json")
     assert obj == {"number": 0}
+
+
+def test_check_missing():
+    # Does not throw error
+    js.create_from("./schemas/default/default_and_const.json", check_missing=True)

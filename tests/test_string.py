@@ -1,4 +1,6 @@
 import json
+
+import pytest
 import jsonschema_default as js
 from pathlib import Path
 import re
@@ -19,3 +21,8 @@ def test_regex():
     assert re.fullmatch(
         pattern=pattern, string=result_string
     ), f"Pattern '{pattern}' does not match string: {result_string}"
+
+
+def test_check_missing():
+    with pytest.raises(js.MissingError):
+        js.create_from("./schemas/string/minLength.json", check_missing=True)
