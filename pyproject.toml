@@ -5,7 +5,7 @@ description = "Create default objects from a JSON schema"
 authors = ["Martin Boos <mboos@outlook.com>"]
 maintainers = ["Martin Boos <mboos@outlook.com>"]
 readme = "README.md"
-homepage = ""
+homepage = "https://github.com/mnboos/jsonschema-default"
 repository = "https://github.com/mnboos/jsonschema-default"
 license = "GNU AGPL v3"
 

@@ -41,7 +41,8 @@ class JsonSchemaDefault:
 
     def _string(self):
         min_length = self.schema.get("minLength", 1)
-        max_length = self.schema.get("maxLength", 10)
+        # Make sure that the max length is at least as big as the min length
+        max_length = self.schema.get("maxLength", max(min_length, 10))
         pattern = self.schema.get("pattern")
         default: str
         if pattern:
