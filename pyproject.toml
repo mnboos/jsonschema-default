@@ -1,25 +1,85 @@
-[tool.poetry]
+[project]
+authors = [
+    {name = "Martin Boos", email = "mboos@outlook.com"},
+]
+maintainers = [
+    {name = "Martin Boos", email = "mboos@outlook.com"},
+]
+license = {text = "GNU AGPL v3"}
+requires-python = "<4.0,>=3.10"
 name = "jsonschema-default"
 version = "1.6.0"
 description = "Create default objects from a JSON schema"
-authors = ["Martin Boos <mboos@outlook.com>"]
-maintainers = ["Martin Boos <mboos@outlook.com>"]
 readme = "README.md"
+dependencies = [
+    "rstr<4.0.0,>=3.2.1",
+]
+
+[project.urls]
 homepage = "https://github.com/mnboos/jsonschema-default"
 repository = "https://github.com/mnboos/jsonschema-default"
-license = "GNU AGPL v3"
-
-[tool.poetry.dependencies]
-python = "^3.10"
-rstr = "^3.2.1"
-loguru = "^0.7.0"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.4.0"
-jsonschema = "^4.18.0"
-flake8 = "^6.0.0"
-black = "^23.7.0"
 
 [build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+requires = ["setuptools", "wheel", "pip"]
+build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+dev = [
+    "pytest<8.0.0,>=7.4.0",
+    "jsonschema<5.0.0,>=4.18.0",
+    "ruff>=0.9.6",
+    "taskipy>=1.14.1",
+    "coverage[toml]>=7.6.12",
+]
+
+[tool.ruff]
+line-length = 120
+extend-exclude = ["**/migrations", ".venv", ".idea", "manage.py"]
+
+[tool.ruff.lint]
+#select = ["E", "F", "I", "B", "SIM", "PL", "FLY", "RUF"]
+select = ["E", "F", "I", "B", "SIM"]
+#select = ["ALL"]
+#select = ["I"]
+extend-ignore = [
+    "F401",  # unused-import
+    "E501",  # line-too-long
+    "B023",  # function-uses-loop-variable
+    "PLE1205",  # https://docs.astral.sh/ruff/rules/logging-too-many-args/#logging-too-many-args-ple1205
+
+    # the following rules are conflicting with the formatter and are therefore disabler for the linter
+    # source: https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
+    "ISC002",
+    "COM819",
+    "COM812",
+    "Q003",
+    "Q002",
+    "Q001",
+    "Q000",
+    "D300",
+    "D206",
+    "E117",
+    "E114",
+    "E111",
+    "W191",
+]
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "lf"
+
+[tool.taskipy.tasks]
+test = { cmd = "coverage run -m pytest && coverage report && coverage html", help = "Run the tests and measure coverage" }
+format = { cmd = "ruff check --select I --fix && ruff check --fix && ruff format", help = "Formats the code using ruff" }
+lint = { cmd = "ruff check" }
+
+[tool.coverage.report]
+skip_covered = true
+fail_under = 97
+exclude_also = []

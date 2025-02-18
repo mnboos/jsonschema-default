@@ -1,7 +1,4 @@
-import json
 import jsonschema_default as js
-from pathlib import Path
-import re
 
 
 def test_default():

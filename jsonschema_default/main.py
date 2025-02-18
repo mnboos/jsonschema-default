@@ -1,9 +1,9 @@
 import json
+import logging
 import random
 import string
 from pathlib import Path
-from typing import Union, Any, Optional
-from loguru import logger
+from typing import Any, Optional, Union
 
 import rstr
 
@@ -29,14 +29,14 @@ class JsonSchemaDefault:
         elif isinstance(schema, str):
             try:
                 schema = json.loads(schema)
-            except json.decoder.JSONDecodeError:
+            except json.decoder.JSONDecodeError as e:
                 path = Path(schema)
                 if path.is_file():
                     schema = json.loads(path.read_text())
                 else:
-                    raise RuntimeError(f"Schema could not be loaded from file: {path}")
+                    raise RuntimeError(f"Schema could not be loaded from file: {path}") from e
 
-        assert type(schema) == dict
+        assert isinstance(schema, dict), f"Schema is not a dict: {schema}"
         self.schema: dict = schema
 
     def _string(self):
@@ -44,11 +44,7 @@ class JsonSchemaDefault:
         # Make sure that the max length is at least as big as the min length
         max_length = self.schema.get("maxLength", max(min_length, 10))
         pattern = self.schema.get("pattern")
-        default: str
-        if pattern:
-            default = rstr.xeger(pattern)
-        else:
-            default = rstr.rstr(string.ascii_letters, min_length, max_length)
+        default = rstr.xeger(pattern) if pattern else rstr.rstr(string.ascii_letters, min_length, max_length)
         return default
 
     def _number(self):
@@ -93,20 +89,13 @@ class JsonSchemaDefault:
         # is_web = name.lower().startswith(("http://", "https://"))
         path: str
         file, path = ref.split("#")
-        if file:
-            schema = json.loads(Path(file).read_text())
-        else:
-            schema = root_schema
+        schema = json.loads(Path(file).read_text()) if file else root_schema
         elem = schema
         for path_parth in path.lstrip("/").split("/"):
-            assert (
-                path_parth in elem
-            ), f"Expected key '{path_parth}' expected but not found in: {elem}"
+            assert path_parth in elem, f"Expected key '{path_parth}' expected but not found in: {elem}"
             elem = elem[path_parth]
         ref_schema = {**elem, "definitions": root_schema.get("definitions")}
-        return JsonSchemaDefault(
-            ref_schema, parent=self, from_refs=[ref, *self.ref_path]
-        ).generate()
+        return JsonSchemaDefault(ref_schema, parent=self, from_refs=[ref, *self.ref_path]).generate()
 
     def generate(self):
         ref = self.schema.get("$ref")
@@ -116,7 +105,7 @@ class JsonSchemaDefault:
 
         assert one_of is None or len(one_of)
         assert any_of is None or len(any_of)
-        assert enum is None or type(enum) == list
+        assert enum is None or isinstance(enum, list)
 
         if ref:
             return self.ref(ref)
@@ -134,22 +123,21 @@ class JsonSchemaDefault:
 
             if enum:
                 result = enum[0]
+            elif t == "string":
+                result = self._string()
+            elif t == "number" or t == "integer":
+                result = self._number()
+            elif t == "array":
+                result = self._array()
+            elif t == "boolean":
+                result = bool(random.randint(0, 1))
+            elif t == "null":
+                result = None
+            elif t == "object":
+                result = self._object()
             else:
-                if t == "string":
-                    result = self._string()
-                elif t == "number" or t == "integer":
-                    result = self._number()
-                elif t == "array":
-                    result = self._array()
-                elif t == "boolean":
-                    result = bool(random.randint(0, 1))
-                elif t == "null":
-                    result = None
-                elif t == "object":
-                    result = self._object()
-                else:
-                    logger.warning("Schema error: {}", self.schema)
-                    raise RuntimeError(f"Unknown type: {t}")
+                logging.warning("Schema error: {}", self.schema)
+                raise RuntimeError(f"Unknown type: {t}")
         return result
 
     def type(self):

@@ -10,9 +10,9 @@ def test_empty():
 
 def test_simple():
     obj = js.create_from("./schemas/simple.json")
-    assert type(obj["string"]) == str
-    assert type(obj["boolean"]) == bool
-    assert type(obj["null"]) == NoneType
+    assert isinstance(obj["string"], str)
+    assert isinstance(obj["boolean"], bool)
+    assert isinstance(obj["null"], NoneType)
 
 
 def test_const():
@@ -22,9 +22,9 @@ def test_const():
 
 def test_object():
     obj = js.create_from("./schemas/object.json")
-    assert type(obj["string"]) == str
+    assert isinstance(obj["string"], str)
 
 
 def test_property_type_list():
     obj = js.create_from("./schemas/prop_type_list.json")
-    assert type(obj["stringorint"]) == str
+    assert isinstance(obj["stringorint"], str)
