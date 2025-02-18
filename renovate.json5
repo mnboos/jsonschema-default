@@ -1,0 +1,49 @@
+{
+    $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+    extends: [
+        'config:recommended',
+        "config:best-practices",
+        "config:js-app",
+        'docker:pinDigests',
+        'group:monorepos',
+        ':pinDependencies',
+        ':pinDevDependencies',
+        ':semanticCommits',
+        'npm:unpublishSafe',
+        ':pinVersions',
+        "default:automergeDigest",
+    ],
+    dependencyDashboard: true,
+    minimumReleaseAge: '5 days',
+    platformAutomerge: false,
+    pinDigests: true,
+    "pre-commit": {
+        enabled: true,
+    },
+    timezone: "Europe/Zurich",
+    rebaseWhen: "behind-base-branch",
+    osvVulnerabilityAlerts: true,
+    dependencyDashboardOSVVulnerabilitySummary: "all",
+    rangeStrategy: "bump",
+    enabledManagers: [
+        'pep621',
+        'github-actions',
+    ],
+    lockFileMaintenance: {
+        enabled: true,
+        automerge: true,
+        platformAutomerge: false,
+    },
+    packageRules: [
+        {
+            matchDepNames: ["python"],
+            allowedVersions: "<3.14.0",
+        },
+        {
+            matchPackageNames: ["ruff", "astral-sh/ruff-pre-commit"],
+            groupName: "ruff packages",
+            matchUpdateTypes: ["minor", "patch"],
+            automerge: true,
+        },
+    ],
+}
