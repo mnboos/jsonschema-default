@@ -20,8 +20,8 @@ homepage = "https://github.com/mnboos/jsonschema-default"
 repository = "https://github.com/mnboos/jsonschema-default"
 
 [build-system]
-requires = ["setuptools", "wheel", "pip"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
