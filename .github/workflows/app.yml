@@ -2,9 +2,9 @@ name: Python CI and Publishing
 
 on:
   push:
-    branches: [ "master", "main", "feature/*", "fix/*", "refactor/*" ]
+    branches: [ "main", "feature/*", "fix/*", "refactor/*" ]
   pull_request:
-    branches: [ "master", "main", "feature/*", "fix/*" ]
+    branches: [ "main", "feature/*", "fix/*", "refactor/*" ]
   release:
     types: [created]
 
