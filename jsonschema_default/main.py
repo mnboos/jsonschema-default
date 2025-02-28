@@ -40,7 +40,7 @@ class JsonSchemaDefault:
     def root_schema(self):
         return self.parent.root_schema() if self.parent else self
 
-    def get[T](self, prop: str, default: T | None = None) -> T | None:
+    def get(self, prop: str, default = None) -> Any | None:
         return self.schema.get(prop, default)
 
     @property
