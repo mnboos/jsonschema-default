@@ -4,7 +4,7 @@ import logging
 import random
 import string
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 import rstr
 
@@ -15,7 +15,7 @@ from jsonschema_default.options import DefaultOptions
 class JsonSchemaDefault:
     def __init__(
         self,
-        schema: dict | str | Path,
+        schema: Union[dict, str, Path],
         parent: Optional["JsonSchemaDefault"],
         from_refs: Optional[list[str]] = None,
     ):
@@ -40,7 +40,7 @@ class JsonSchemaDefault:
     def root_schema(self):
         return self.parent.root_schema() if self.parent else self
 
-    def get(self, prop: str, default = None) -> Any | None:
+    def get(self, prop: str, default = None) -> Union[Any, None]:
         return self.schema.get(prop, default)
 
     @property
@@ -76,7 +76,7 @@ class JsonSchemaDefault:
     def const(self):
         return self.get("const", None)
 
-    def generate(self, options: DefaultOptions | None = None):
+    def generate(self, options: Union[DefaultOptions, None] = None):
         if options is None:
             options = DefaultOptions()
 
@@ -147,7 +147,7 @@ class StringDefault(SchemaDefaultBase):
         )
 
     @property
-    def min_length(self) -> int:
+    def min_length(self):
         return self.schema.get("minLength", self.options.string.min_length)
 
     @property
@@ -244,19 +244,19 @@ class IntegerDefault(SchemaDefaultBase):
             raise ValueError("exclusiveMinimum must be smaller than maximum")
 
     @property
-    def minimum(self) -> int | None:
+    def minimum(self) -> Union[int, None]:
         return self.schema.get("minimum", None)
 
     @property
-    def maximum(self) -> int | None:
+    def maximum(self) -> Union[int, None]:
         return self.schema.get("maximum", None)
 
     @property
-    def exclusive_minimum(self) -> int | None:
+    def exclusive_minimum(self) -> Union[int, None]:
         return self.schema.get("exclusiveMinimum", None)
 
     @property
-    def multiple_of(self) -> int | None:
+    def multiple_of(self) -> Union[int, None]:
         return self.schema.get("multipleOf", None)
 
     def make_default(self):
