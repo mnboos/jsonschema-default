@@ -81,5 +81,5 @@ lint = { cmd = "ruff check" }
 
 [tool.coverage.report]
 skip_covered = true
-fail_under = 97
+fail_under = 100
 exclude_also = ["pass",]
