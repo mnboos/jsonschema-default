@@ -1,5 +1,3 @@
-from types import NoneType
-
 import pytest
 
 import jsonschema_default as js
@@ -14,7 +12,7 @@ def test_simple():
     obj = js.create_from("./schemas/simple.json")
     assert isinstance(obj["string"], str)
     assert isinstance(obj["boolean"], bool)
-    assert isinstance(obj["null"], NoneType)
+    assert obj["null"] is None
 
 
 def test_const():
