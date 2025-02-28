@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
        "alice": { "$ref": "#/definitions/bob" },
-        "bob": { "$ref": "#/definitions/alice" }
+       "bob": { "$ref": "#/definitions/alice" }
   },
   "$ref": "#/definitions/alice"
 }

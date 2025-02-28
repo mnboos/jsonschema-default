@@ -1,6 +1,7 @@
 import pytest
 
 import jsonschema_default as js
+from jsonschema_default.errors import RefCycleError
 
 
 def test_simple_ref():
@@ -9,8 +10,9 @@ def test_simple_ref():
 
 
 def test_ref_cycle():
-    with pytest.raises(Exception, match="Ref cycle detected"):
+    with pytest.raises(RefCycleError) as exc:
         js.create_from("./schemas/ref/cycle.json")
+    assert "#/definitions/alice -> #/definitions/bob -> #/definitions/alice" in str(exc.value)
 
 
 def test_any_of():
@@ -21,6 +23,11 @@ def test_any_of():
 def test_thing():
     obj = js.create_from("./schemas/ref/thing.json")
     assert obj == {"thing": "foo"}
+
+
+def test_deep_ref():
+    obj = js.create_from("./schemas/ref/abcd.json")
+    assert obj == {"abcd": "foobar"}
 
 
 def test_streetaddress():

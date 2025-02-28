@@ -1,3 +1,4 @@
+import abc
 import json
 import logging
 import random
@@ -7,6 +8,9 @@ from typing import Any, Optional, Union
 
 import rstr
 
+from jsonschema_default.errors import LoadError, RefCycleError
+from jsonschema_default.options import DefaultOptions
+
 
 class JsonSchemaDefault:
     def __init__(
@@ -15,12 +19,6 @@ class JsonSchemaDefault:
         parent: Optional["JsonSchemaDefault"],
         from_refs: Optional[list[str]] = None,
     ):
-        """
-        Creates a default object for the specified schema
-        :param schema:
-        :return:
-        """
-
         self.parent = parent
         self.ref_path: list[str] = from_refs if from_refs else []
 
@@ -34,112 +32,34 @@ class JsonSchemaDefault:
                 if path.is_file():
                     schema = json.loads(path.read_text())
                 else:
-                    raise RuntimeError(f"Schema could not be loaded from file: {path}") from e
+                    raise LoadError(f"Schema could not be loaded from file: {path}") from e
 
         assert isinstance(schema, dict), f"Schema is not a dict: {schema}"
-        self.schema: dict = schema
+        self.schema = schema
 
-    def _string(self):
-        min_length = self.schema.get("minLength", 1)
-        # Make sure that the max length is at least as big as the min length
-        max_length = self.schema.get("maxLength", max(min_length, 10))
-        pattern = self.schema.get("pattern")
-        default = rstr.xeger(pattern) if pattern else rstr.rstr(string.ascii_letters, min_length, max_length)
-        return default
+    def root_schema(self):
+        return self.parent.root_schema() if self.parent else self
 
-    def _number(self):
-        default = 0
-        minimum = self.schema.get("minimum")
-        maximum = self.schema.get("maximum")
-        exclusive_minimum = self.schema.get("exclusiveMinimum")
-        multiple_of = self.schema.get("multipleOf")
+    def get(self, prop: str, default = None) -> Union[Any, None]:
+        return self.schema.get(prop, default)
 
-        if minimum is not None:
-            default = minimum
-        if maximum is not None and minimum is None:
-            default = maximum
-        if exclusive_minimum is not None:
-            default = exclusive_minimum + 1
-        if multiple_of is not None:
-            default = default + (multiple_of - (default % multiple_of))
-        return default
+    @property
+    def ref(self):
+        return self.get("$ref")
 
-    def _array(self):
-        nr_items = self.schema.get("minItems", 0)
-        item_schema = self.schema.get("items", {})
-        gen = JsonSchemaDefault(item_schema, parent=self)
-        return [gen.generate() for _ in range(nr_items)]
+    @property
+    def one_of(self):
+        return self.get("oneOf")
 
-    def _object(self):
-        default = {}
-        props: dict[str, dict] = self.schema.get("properties", {})
-        for name, schema in props.items():
-            default[name] = JsonSchemaDefault(schema, parent=self).generate()
-        return default
+    @property
+    def any_of(self):
+        return self.get("anyOf")
 
-    def _root(self):
-        return self.parent._root() if self.parent else self
+    @property
+    def enum(self):
+        return self.get("enum")
 
-    def ref(self, ref: str) -> any:
-        if ref in self.ref_path:
-            raise RuntimeError("Ref cycle detected")
-
-        root_schema = self._root().schema
-
-        # is_web = name.lower().startswith(("http://", "https://"))
-        path: str
-        file, path = ref.split("#")
-        schema = json.loads(Path(file).read_text()) if file else root_schema
-        elem = schema
-        for path_parth in path.lstrip("/").split("/"):
-            assert path_parth in elem, f"Expected key '{path_parth}' expected but not found in: {elem}"
-            elem = elem[path_parth]
-        ref_schema = {**elem, "definitions": root_schema.get("definitions")}
-        return JsonSchemaDefault(ref_schema, parent=self, from_refs=[ref, *self.ref_path]).generate()
-
-    def generate(self):
-        ref = self.schema.get("$ref")
-        one_of = self.schema.get("oneOf")
-        any_of = self.schema.get("anyOf")
-        enum = self.schema.get("enum")
-
-        assert one_of is None or len(one_of)
-        assert any_of is None or len(any_of)
-        assert enum is None or isinstance(enum, list)
-
-        if ref:
-            return self.ref(ref)
-        elif one_of or any_of:
-            s = one_of[0] if one_of else any_of[0]
-            return JsonSchemaDefault(s, parent=self).generate()
-
-        result: Any
-        if "default" in self.schema:
-            result = self.schema["default"]
-        elif "const" in self.schema:
-            result = self.schema["const"]
-        else:
-            t = self.type()
-
-            if enum:
-                result = enum[0]
-            elif t == "string":
-                result = self._string()
-            elif t == "number" or t == "integer":
-                result = self._number()
-            elif t == "array":
-                result = self._array()
-            elif t == "boolean":
-                result = bool(random.randint(0, 1))
-            elif t == "null":
-                result = None
-            elif t == "object":
-                result = self._object()
-            else:
-                logging.warning("Schema error: {}", self.schema)
-                raise RuntimeError(f"Unknown type: {t}")
-        return result
-
+    @property
     def type(self):
         t = self.schema.get("type", "object")
         if isinstance(t, list):
@@ -147,3 +67,210 @@ class JsonSchemaDefault:
                 raise RuntimeError("Type must not be an empty list")
             t = t[0]
         return t
+
+    @property
+    def default(self):
+        return self.get("default", None)
+
+    @property
+    def const(self):
+        return self.get("const", None)
+
+    def generate(self, options: Union[DefaultOptions, None] = None):
+        if options is None:
+            options = DefaultOptions()
+
+        ref = self.ref
+        one_of = self.one_of
+        any_of = self.any_of
+        enum = self.enum
+
+        assert one_of is None or len(one_of)
+        assert any_of is None or len(any_of)
+        assert enum is None or isinstance(enum, list)
+
+        if ref:
+            return RefDefault(ref=ref, schema=self, options=options).make_default()
+        elif one_of or any_of:
+            s = one_of[0] if one_of else any_of[0]
+            return JsonSchemaDefault(s, parent=self).generate(options=options)
+
+        result: Any
+        if "default" in self.schema:
+            result = self.default
+        elif "const" in self.schema:
+            result = self.const
+        elif self.enum:
+            result = self.enum[0]
+        else:
+            default_maker: SchemaDefaultBase
+            if self.type == "string":
+                default_maker = StringDefault(schema=self, options=options)
+            elif self.type == "number" or self.type == "integer":
+                default_maker = IntegerDefault(schema=self, options=options)
+            elif self.type == "boolean":
+                default_maker = BooleanDefault(schema=self, options=options)
+            elif self.type == "array":
+                default_maker = ArrayDefault(schema=self, options=options)
+            elif self.type == "null":
+                default_maker = NullDefault(schema=self, options=options)
+            elif self.type == "object":
+                default_maker = ObjectDefault(schema=self, options=options)
+            else:
+                logging.error("Schema error, unknown property type: {}", self.schema)
+                raise RuntimeError(f"Schema error, unknown property type: {self.type}")
+
+            result = default_maker.make_default()
+
+        return result
+
+
+class SchemaDefaultBase(abc.ABC):
+    def __init__(self, *, schema: JsonSchemaDefault, options: DefaultOptions):
+        self.schema = schema
+        self.options = options
+
+    @abc.abstractmethod
+    def make_default(self):
+        pass
+
+
+class StringDefault(SchemaDefaultBase):
+    def __init__(self, *, schema: JsonSchemaDefault, options: DefaultOptions):
+        super().__init__(schema=schema, options=options)
+
+    def make_default(self):
+        return (
+            rstr.xeger(self.pattern)
+            if self.pattern
+            else rstr.rstr(string.ascii_letters, self.min_length, self.max_length)
+        )
+
+    @property
+    def min_length(self):
+        return self.schema.get("minLength", self.options.string.min_length)
+
+    @property
+    def max_length(self):
+        return self.schema.get("maxLength", max(self.min_length, self.options.string.max_length))
+
+    @property
+    def pattern(self):
+        return self.schema.get("pattern", "")
+
+
+class BooleanDefault(SchemaDefaultBase):
+    def __init__(self, *, schema: JsonSchemaDefault, options: DefaultOptions):
+        super().__init__(schema=schema, options=options)
+
+    def make_default(self):
+        return bool(random.randint(0, 1))
+
+
+class ArrayDefault(SchemaDefaultBase):
+    def __init__(self, *, schema: JsonSchemaDefault, options: DefaultOptions):
+        super().__init__(schema=schema, options=options)
+
+    @property
+    def min_items(self):
+        return self.schema.get("minItems", 0)
+
+    @property
+    def items(self):
+        return self.schema.get("items", {})
+
+    def make_default(self):
+        nr_items = self.min_items
+        item_schema = self.items
+        gen = JsonSchemaDefault(item_schema, parent=self.schema)
+        return [gen.generate(self.options) for _ in range(nr_items)]
+
+
+class NullDefault(SchemaDefaultBase):
+    def __init__(self, *, schema: JsonSchemaDefault, options: DefaultOptions):
+        super().__init__(schema=schema, options=options)
+
+    def make_default(self):
+        return None
+
+
+class RefDefault(SchemaDefaultBase):
+    def __init__(self, *, ref: str, schema: JsonSchemaDefault, options: DefaultOptions):
+        super().__init__(schema=schema, options=options)
+        self.ref = ref
+
+    def make_default(self):
+        if self.ref in self.schema.ref_path:
+            raise RefCycleError(refs=[*self.schema.ref_path, self.ref])
+
+        root_schema = self.schema.root_schema().schema
+
+        # is_web = name.lower().startswith(("http://", "https://"))
+        path: str
+        file, path = self.ref.split("#")
+        schema = json.loads(Path(file).read_text()) if file else root_schema
+        elem = schema
+        for path_parth in path.lstrip("/").split("/"):
+            assert path_parth in elem, f"Expected key '{path_parth}' expected but not found in: {elem}"
+            elem = elem[path_parth]
+        ref_schema = {**elem, "definitions": root_schema.get("definitions")}
+        return JsonSchemaDefault(ref_schema, parent=self.schema, from_refs=[*self.schema.ref_path, self.ref]).generate(
+            self.options
+        )
+
+
+class ObjectDefault(SchemaDefaultBase):
+    def __init__(self, *, schema: JsonSchemaDefault, options: DefaultOptions):
+        super().__init__(schema=schema, options=options)
+
+    @property
+    def properties(self) -> dict[str, Any]:
+        return self.schema.get("properties", {})
+
+    def make_default(self):
+        default = {}
+        for name, schema in self.properties.items():
+            prop_schema = JsonSchemaDefault(schema=schema, parent=self.schema)
+            default[name] = prop_schema.generate(options=self.options)
+        return default
+
+
+class IntegerDefault(SchemaDefaultBase):
+    def __init__(self, *, schema: JsonSchemaDefault, options: DefaultOptions):
+        super().__init__(schema=schema, options=options)
+        if self.minimum is not None and self.maximum is not None and self.minimum > self.maximum:
+            raise ValueError("minimum must be smaller or equal than maximum")
+        if self.exclusive_minimum is not None and self.maximum is not None and self.exclusive_minimum >= self.maximum:
+            raise ValueError("exclusiveMinimum must be smaller than maximum")
+
+    @property
+    def minimum(self) -> Union[int, None]:
+        return self.schema.get("minimum", None)
+
+    @property
+    def maximum(self) -> Union[int, None]:
+        return self.schema.get("maximum", None)
+
+    @property
+    def exclusive_minimum(self) -> Union[int, None]:
+        return self.schema.get("exclusiveMinimum", None)
+
+    @property
+    def multiple_of(self) -> Union[int, None]:
+        return self.schema.get("multipleOf", None)
+
+    def make_default(self):
+        default: int
+        if self.minimum is not None:
+            default = self.minimum
+        elif self.maximum is not None and self.minimum is None:
+            default = self.maximum
+        elif self.exclusive_minimum is not None:
+            default = self.exclusive_minimum + 1
+        else:
+            default = 0
+
+        if self.multiple_of is not None:
+            default = default + (self.multiple_of - (default % self.multiple_of))
+
+        return default

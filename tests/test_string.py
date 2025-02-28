@@ -12,6 +12,13 @@ def test_min_length():
     assert isinstance(val, str) and len(val) >= min_length
 
 
+def test_max_length():
+    obj = js.create_from("./schemas/string/maxLength.json")
+    val = obj["string"]
+    max_length = 2
+    assert isinstance(val, str) and len(val) <= max_length
+
+
 def test_regex():
     schema_path = "./schemas/string/regex.json"
     schema = json.loads(Path(schema_path).read_text())
