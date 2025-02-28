@@ -7,6 +7,8 @@ from typing import Any, Optional, Union
 
 import rstr
 
+from jsonschema_default.errors import RefCycleError
+
 
 class JsonSchemaDefault:
     def __init__(
@@ -82,7 +84,7 @@ class JsonSchemaDefault:
 
     def ref(self, ref: str) -> any:
         if ref in self.ref_path:
-            raise RuntimeError("Ref cycle detected")
+            raise RefCycleError(refs=[*self.ref_path, ref])
 
         root_schema = self._root().schema
 
@@ -95,7 +97,7 @@ class JsonSchemaDefault:
             assert path_parth in elem, f"Expected key '{path_parth}' expected but not found in: {elem}"
             elem = elem[path_parth]
         ref_schema = {**elem, "definitions": root_schema.get("definitions")}
-        return JsonSchemaDefault(ref_schema, parent=self, from_refs=[ref, *self.ref_path]).generate()
+        return JsonSchemaDefault(ref_schema, parent=self, from_refs=[*self.ref_path, ref]).generate()
 
     def generate(self):
         ref = self.schema.get("$ref")

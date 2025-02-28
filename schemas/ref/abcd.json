@@ -1,0 +1,24 @@
+{
+  "title": "Deep Ref",
+  "type": "object",
+  "properties": {
+    "abcd": {
+      "$ref": "#/definitions/A"
+    }
+  },
+  "definitions": {
+    "A": {
+      "$ref": "#/definitions/B"
+    },
+    "B": {
+      "$ref": "#/definitions/C"
+    },
+    "C": {
+      "$ref": "#/definitions/D"
+    },
+    "D": {
+      "type": "string",
+      "default": "foobar"
+    }
+  }
+}
