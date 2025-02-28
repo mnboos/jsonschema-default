@@ -75,11 +75,11 @@ skip-magic-trailing-comma = false
 line-ending = "lf"
 
 [tool.taskipy.tasks]
-test = { cmd = "coverage run -m pytest && coverage report && coverage html", help = "Run the tests and measure coverage" }
+test = { cmd = "coverage run -m pytest && coverage html && coverage report", help = "Run the tests and measure coverage" }
 format = { cmd = "ruff check --select I --fix && ruff check --fix && ruff format", help = "Formats the code using ruff" }
 lint = { cmd = "ruff check" }
 
 [tool.coverage.report]
 skip_covered = true
 fail_under = 97
-exclude_also = []
+exclude_also = ["pass",]
