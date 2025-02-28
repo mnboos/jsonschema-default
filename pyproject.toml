@@ -6,7 +6,7 @@ maintainers = [
     {name = "Martin Boos", email = "mboos@outlook.com"},
 ]
 license = {text = "GNU AGPL v3"}
-requires-python = "<4.0,>=3.10"
+requires-python = "<4.0,>=3.9"
 name = "jsonschema-default"
 version = "1.6.1"
 description = "Create default objects from a JSON schema"
