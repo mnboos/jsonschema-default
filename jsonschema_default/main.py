@@ -1,23 +1,24 @@
 import abc
 import json
 import logging
-from pathlib import Path
 import random
+import string
+from pathlib import Path
 from typing import Any, Optional
 
 import rstr
-import string
 
 from jsonschema_default.errors import LoadError, RefCycleError
 from jsonschema_default.options import DefaultOptions
 
 
 class JsonSchemaDefault:
-    def __init__(self,
-                 schema: dict| str| Path,
-                 parent: Optional["JsonSchemaDefault"],
-                 from_refs: Optional[list[str]] = None,
-                 ):
+    def __init__(
+        self,
+        schema: dict | str | Path,
+        parent: Optional["JsonSchemaDefault"],
+        from_refs: Optional[list[str]] = None,
+    ):
         self.parent = parent
         self.ref_path: list[str] = from_refs if from_refs else []
 
@@ -125,12 +126,7 @@ class JsonSchemaDefault:
         return result
 
 
-
-
-
-
 class SchemaDefaultBase(abc.ABC):
-
     def __init__(self, *, schema: JsonSchemaDefault, options: DefaultOptions):
         self.schema = schema
         self.options = options
@@ -141,12 +137,15 @@ class SchemaDefaultBase(abc.ABC):
 
 
 class StringDefault(SchemaDefaultBase):
-
     def __init__(self, *, schema: JsonSchemaDefault, options: DefaultOptions):
         super().__init__(schema=schema, options=options)
 
     def make_default(self):
-        return rstr.xeger(self.pattern) if self.pattern else rstr.rstr(string.ascii_letters, self.min_length, self.max_length)
+        return (
+            rstr.xeger(self.pattern)
+            if self.pattern
+            else rstr.rstr(string.ascii_letters, self.min_length, self.max_length)
+        )
 
     @property
     def min_length(self) -> int:
@@ -216,8 +215,9 @@ class RefDefault(SchemaDefaultBase):
             assert path_parth in elem, f"Expected key '{path_parth}' expected but not found in: {elem}"
             elem = elem[path_parth]
         ref_schema = {**elem, "definitions": root_schema.get("definitions")}
-        return JsonSchemaDefault(ref_schema, parent=self.schema, from_refs=[*self.schema.ref_path, self.ref]).generate(self.options)
-
+        return JsonSchemaDefault(ref_schema, parent=self.schema, from_refs=[*self.schema.ref_path, self.ref]).generate(
+            self.options
+        )
 
 
 class ObjectDefault(SchemaDefaultBase):
@@ -243,7 +243,6 @@ class IntegerDefault(SchemaDefaultBase):
             raise ValueError("minimum must be smaller or equal than maximum")
         if self.exclusive_minimum is not None and self.maximum is not None and self.exclusive_minimum >= self.maximum:
             raise ValueError("exclusiveMinimum must be smaller than maximum")
-
 
     @property
     def minimum(self) -> int | None:

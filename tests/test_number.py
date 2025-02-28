@@ -12,6 +12,7 @@ def test_multipleof():
     obj = js.create_from("./schemas/number/multipleOf.json")
     assert obj == {"number": 11}
 
+
 def test_multipleof_with_minimum():
     obj = js.create_from("./schemas/number/multipleOf_with_minimum.json")
     assert obj == {"number": 12}
@@ -47,7 +48,6 @@ def test_default():
     If a default is defined in the schema, the generated value should be the default.
     :return:
     """
-
 
     obj = js.create_from("./schemas/number/default.json")
     assert obj == 0

@@ -26,10 +26,12 @@ def test_property_type_list():
     obj = js.create_from("./schemas/prop_type_list.json")
     assert isinstance(obj["stringorint"], str)
 
+
 def test_property_type_list_empty():
-    with pytest.raises(Exception):
+    with pytest.raises(RuntimeError):
         js.create_from("./schemas/prop_type_list_empty.json")
 
+
 def test_missing_type():
-    with pytest.raises(Exception):
+    with pytest.raises(RuntimeError):
         js.create_from("./schemas/unknown_type.json")

@@ -12,7 +12,7 @@ def test_simple_ref():
 def test_ref_cycle():
     with pytest.raises(RefCycleError) as exc:
         js.create_from("./schemas/ref/cycle.json")
-    assert '#/definitions/alice -> #/definitions/bob -> #/definitions/alice' in str(exc.value)
+    assert "#/definitions/alice -> #/definitions/bob -> #/definitions/alice" in str(exc.value)
 
 
 def test_any_of():

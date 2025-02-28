@@ -1,11 +1,5 @@
-import abc
-
-
-class SchemaDefaultOptionsBase(abc.ABC):
+class SchemaDefaultOptionsBase:
     pass
-
-
-
 
 
 class StringDefaultOptions(SchemaDefaultOptionsBase):
@@ -29,11 +23,14 @@ class BooleanDefaultOptions(SchemaDefaultOptionsBase):
 class IntegerDefaultOptions(SchemaDefaultOptionsBase):
     pass
 
+
 class NullDefaultOptions(SchemaDefaultOptionsBase):
     pass
 
+
 class ObjectDefaultOptions(SchemaDefaultOptionsBase):
     pass
+
 
 class ArrayDefaultOptions(SchemaDefaultOptionsBase):
     pass

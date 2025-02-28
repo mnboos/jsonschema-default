@@ -13,5 +13,5 @@ def test_load_from_path():
 
 
 def test_inexisting_file():
-    with pytest.raises(LoadError) as exc:
+    with pytest.raises(LoadError):
         js.create_from("./thisschemadoesnotexist.json")
