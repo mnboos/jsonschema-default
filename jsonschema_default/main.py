@@ -104,22 +104,21 @@ class JsonSchemaDefault:
             result = self.enum[0]
         else:
             default_maker: SchemaDefaultBase
-            match self.type:
-                case "string":
-                    default_maker = StringDefault(schema=self, options=options)
-                case "number" | "integer":
-                    default_maker = IntegerDefault(schema=self, options=options)
-                case "boolean":
-                    default_maker = BooleanDefault(schema=self, options=options)
-                case "array":
-                    default_maker = ArrayDefault(schema=self, options=options)
-                case "null":
-                    default_maker = NullDefault(schema=self, options=options)
-                case "object":
-                    default_maker = ObjectDefault(schema=self, options=options)
-                case _:
-                    logging.error("Schema error, unknown property type: {}", self.schema)
-                    raise RuntimeError(f"Schema error, unknown property type: {self.type}")
+            if self.type == "string":
+                default_maker = StringDefault(schema=self, options=options)
+            elif self.type == "number" or self.type == "integer":
+                default_maker = IntegerDefault(schema=self, options=options)
+            elif self.type == "boolean":
+                default_maker = BooleanDefault(schema=self, options=options)
+            elif self.type == "array":
+                default_maker = ArrayDefault(schema=self, options=options)
+            elif self.type == "null":
+                default_maker = NullDefault(schema=self, options=options)
+            elif self.type == "object":
+                default_maker = ObjectDefault(schema=self, options=options)
+            else:
+                logging.error("Schema error, unknown property type: {}", self.schema)
+                raise RuntimeError(f"Schema error, unknown property type: {self.type}")
 
             result = default_maker.make_default()
 
