@@ -9,7 +9,19 @@ from typing import Any, Optional, Union
 import rstr
 
 from jsonschema_default.errors import LoadError, RefCycleError
-from jsonschema_default.options import DefaultOptions
+
+
+class DefaultOptions:
+    def __init__(self, *, make_random: bool = False, string_min_length=1, string_max_length=10):
+        if string_min_length < 0:
+            raise ValueError("string_min_length must not be negative")
+        if string_min_length > string_max_length:
+            raise ValueError("string_min_length must be smaller or equal than string_max_length")
+
+        self.make_random = make_random
+
+        self.string_min_length = string_min_length
+        self.string_max_length = string_max_length
 
 
 class JsonSchemaDefault:
@@ -139,24 +151,29 @@ class StringDefault(SchemaDefaultBase):
     def __init__(self, *, schema: JsonSchemaDefault, options: DefaultOptions):
         super().__init__(schema=schema, options=options)
 
-    def make_default(self):
+    def _make(self, *, min_length: int, max_length: int):
         return (
             rstr.xeger(self.pattern)
             if self.pattern
-            else rstr.rstr(string.ascii_letters, self.min_length, self.max_length)
+            else rstr.rstr(alphabet=string.ascii_letters, start_range=min_length, end_range=max_length)
         )
 
     @property
     def min_length(self):
-        return self.schema.get("minLength", self.options.string.min_length)
+        return self.schema.get("minLength", self.options.string_min_length)
 
     @property
     def max_length(self):
-        return self.schema.get("maxLength", max(self.min_length, self.options.string.max_length))
+        return self.schema.get("maxLength", max(self.min_length, self.options.string_max_length))
 
     @property
     def pattern(self):
-        return self.schema.get("pattern", "")
+        return self.schema.get("pattern")
+
+    def make_default(self):
+        min_length = self.min_length if self.min_length is not None else self.options.string_min_length
+        max_length = self.max_length if self.max_length is not None else self.options.string_max_length
+        return self._make(min_length=min_length, max_length=max_length)
 
 
 class BooleanDefault(SchemaDefaultBase):

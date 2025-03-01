@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Union
 
 from . import main
-from .options import DefaultOptions
+from .main import DefaultOptions
 
 
 def create_from(schema: Union[dict, str, Path], default_options: Union[DefaultOptions, None] = None) -> dict:
