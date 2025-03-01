@@ -9,9 +9,9 @@ from jsonschema_default.errors import LoadError
 
 
 def test_load_from_path():
-    js.create_from(Path("./schemas/string/minLength.json"))
+    js.create_from(Path("../schemas/string/minLength.json"))
 
 
 def test_inexisting_file():
     with pytest.raises(LoadError):
-        js.create_from("./thisschemadoesnotexist.json")
+        js.create_from("../thisschemadoesnotexist.json")

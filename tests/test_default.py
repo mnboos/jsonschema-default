@@ -2,7 +2,7 @@ import jsonschema_default as js
 
 
 def test_default():
-    obj = js.create_from("./schemas/default/default.json")
+    obj = js.create_from("../schemas/default/default.json")
     assert obj == {"number": 0}
 
 
@@ -12,5 +12,5 @@ def test_default_and_const():
     :return:
     """
 
-    obj = js.create_from("./schemas/default/default_and_const.json")
+    obj = js.create_from("../schemas/default/default_and_const.json")
     assert obj == {"number": 0}
