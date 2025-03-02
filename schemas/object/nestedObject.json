@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema/",
+      "type": "object",
+      "properties": {
+        "a": {
+          "type": "object",
+          "properties": {
+            "a.1": {
+              "type": "string",
+              "default": "foobar"
+            },
+            "a.2": {
+              "type": "number",
+              "default": 123
+            }
+          }
+        }
+      }
+}

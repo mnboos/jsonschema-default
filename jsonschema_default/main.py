@@ -88,7 +88,7 @@ class JsonSchemaDefault:
     def const(self):
         return self.get("const", None)
 
-    def generate(self, options: Union[DefaultOptions, None] = None):
+    def generate(self, options: Union[DefaultOptions, None] = None) -> Any:
         if options is None:
             options = DefaultOptions()
 
@@ -135,6 +135,19 @@ class JsonSchemaDefault:
             result = default_maker.make_default()
 
         return result
+
+    def fill(self, target: dict, options: DefaultOptions):
+        res = self.generate(options=options)
+
+        def assign_recursive(to: dict, src: dict) -> None:
+            if isinstance(src, dict):
+                for k, v in src.items():
+                    to.setdefault(k, to.get(k, v))
+                    child = to.get(k)
+                    if isinstance(child, dict):
+                        assign_recursive(to=child, src=src[k])
+
+        assign_recursive(to=target, src=res)
 
 
 class SchemaDefaultBase(abc.ABC):
