@@ -5,7 +5,7 @@ authors = [
 maintainers = [
     {name = "Martin Boos", email = "mboos@outlook.com"},
 ]
-license = {text = "GNU AGPL v3"}
+license = "AGPL-3.0-or-later"
 requires-python = "<4.0,>=3.9"
 name = "jsonschema-default"
 version = "1.8.0"
