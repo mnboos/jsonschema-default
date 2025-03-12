@@ -16,6 +16,7 @@
     dependencyDashboard: true,
     minimumReleaseAge: '5 days',
     platformAutomerge: false,
+    automergeType: "branch",
     pinDigests: true,
     "pre-commit": {
         enabled: true,
@@ -44,6 +45,11 @@
             groupName: "ruff packages",
             matchUpdateTypes: ["minor", "patch"],
             automerge: true,
+        },
+        {
+            matchPackageNames: ["pytest"],
+            matchUpdateTypes: ["minor", "patch"],
+            automerge: true
         },
     ],
 }
