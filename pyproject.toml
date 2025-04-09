@@ -60,7 +60,7 @@ build-backend = "hatchling.build"
 dev = [
     "pytest==8.3.5",
     "jsonschema==4.23.0",
-    "ruff==0.11.3",
+    "ruff==0.11.4",
     "taskipy==1.14.1",
     "coverage[toml]==7.6.12",
 ]
