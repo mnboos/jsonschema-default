@@ -62,7 +62,7 @@ dev = [
     "jsonschema==4.23.0",
     "ruff==0.11.9",
     "taskipy==1.14.1",
-    "coverage[toml]==7.6.12",
+    "coverage[toml]==7.8.0",
 ]
 
 [tool.ruff]
